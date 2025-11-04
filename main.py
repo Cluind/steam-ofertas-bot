@@ -14,16 +14,21 @@ def buscar_ofertas():
     r = requests.get(url).json()
     ofertas = []
     for item in r["specials"]["items"]:
-        desconto = item["discount_percent"]
-        if desconto >= 70:
-            nome = item["name"]
-            preco = item["final_price"] / 100
-            link = item["store_url"]
-            ofertas.append(f"🔥 <b>{nome}</b> - {desconto}% OFF\n💰 R${preco:.2f}\n🔗 {link}")
+        try:
+            desconto = item.get("discount_percent", 0)
+            if desconto >= 70:
+                nome = item.get("name", "Jogo desconhecido")
+                preco = item.get("final_price", 0) / 100
+                link = f"https://store.steampowered.com/app/{item['id']}/"
+                ofertas.append(f"🔥 <b>{nome}</b> - {desconto}% OFF\n💰 R${preco:.2f}\n🔗 {link}")
+        except Exception as e:
+            print("Erro ao processar item:", e)
     return ofertas
+
 
 while True:
     ofertas = buscar_ofertas()
     for o in ofertas:
         enviar_mensagem(o)
     time.sleep(3600)
+
